@@ -1,8 +1,19 @@
 # Reversi		
 
+#En las primeras lineas del codigo defino las funciones que posterirmente ocupo para jugar.
+
+#Importando Modulos
 import random
 import sys		
-		
+
+#########################################################
+#La estructura del Tablero de Datos del Tablero de Juego#
+#########################################################
+
+#La estructura es una lista de listas. La lista de listas se crea para que tablero[x][y] represente al caracter en la posicion 
+#x sobre el eje X (izquierda a derecha) y la posicion y sobre el eje Y (arriba hacia abajo).
+
+#La funcion dibujarTablero() imprime el tablero actual del juego basado en la estrucutra de datos en la variable tablero.
 def dibujarTablero(tablero):		
     # Esta funcion dibuja el tablero recibido. Devuelve None		
     LÍNEAH = '  +---+---+---+---+---+---+---+---+'		
@@ -19,7 +30,7 @@ def dibujarTablero(tablero):
         print(LÍNEAV)		
         print(LÍNEAH)		
 		
-		
+#Permite comenzar un nuevo juego
 def reiniciarTablero(tablero):		
     # Deja en blanco el tablero recibido como argumento, excepto la posición inicial		
     for x in range(8):		
@@ -32,7 +43,8 @@ def reiniciarTablero(tablero):
     tablero[4][3] = 'O'		
     tablero[4][4] = 'X'		
 		
-		
+#Crea una nueva estructura de datos tablero y la devuelve, crea las 8 listas internas. Los espacios representan un tablero de juego completamente vacio
+#Lo que la variable tablero termina siendo es una lista de 8 listas, y cada una de esas listas tiene 8 cadenas. El resultado son 64 cadenas '' con un caracter espacio.
 def obtenerNuevoTablero():		
     # Crea un tablero nuevo, vacío.		
     tablero = []		
@@ -40,32 +52,51 @@ def obtenerNuevoTablero():
         tablero.append([' '] * 8)		
 		
     return tablero		
-		
-		
+
+#############################################################################################################################################################
+#Coprobando si una Jugada es Válida
+#Dada una estructura de datos tablero, la baldosa del jugador y la coordenadas XY de la jgada del jugador, esJugadaVálida() devuelve True si las reglas de
+#Othello permiten una jugada en esas coordenadas y False en caso contrario.
+#
+#1) Pertenecer al tablero
+#   
+#2) Convertir (tocar) almenos una pieza del otro jugador
+#############################################################################################################################################################
 def esJugadaVálida(tablero, baldosa, comienzox, comienzoy):
     # Devuelve False si la jugada del jugador en comienzox, comienzoy es invalida		
     # Si es una jugada válida, devuelve una lista de espacios que pasarían a ser del jugador si moviera aquí.
-    if tablero[comienzox][comienzoy] != ' ' or not estáEnTablero(comienzox, comienzoy):
+    #Comprueba si las coordenadas XY estan fuera del tablero, o si el espacio no esta vacio. estanEnTablero() es una funcion definida mas adelante en el programa 
+    #que se asegura de que el valor de ambas coordenadas X e Y este comprendido entre 0 y 7.
+    if tablero[comienzox][comienzoy] != ' ' or not estáEnTablero(comienzox, comienzoy): #Validamos que la jugada se encuentra dentro del tablero
         return False		
 		
     tablero[comienzox][comienzoy] = baldosa # coloca temporariamente la baldosa sobre el tablero.		
 		
-    if baldosa == 'X':		
-        otraBaldosa = 'O'		
-    else:		
-        otraBaldosa = 'X'		
+    if baldosa == 'X':
+        otraBaldosa = 'O'
+    else:
+        otraBaldosa = 'X'
 		
-    baldosasAConvertir = []		
+    baldosasAConvertir = []
+    
+    #El bucle for nos indica las direcciones que puede moverse una jugada dada    
     for direcciónx, direccióny in [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]:		
-        x, y = comienzox, comienzoy		
+        #Se modifican las variables x e y para moverse en las dirreciones determinadas por direccionx y direcciony.
+        x, y = comienzox, comienzoy
         x += direcciónx # primer paso en la dirección		
         y += direccióny # primer paso en la dirección		
+        
+        #Para que sea una jugada valida:
+        
+        #1)Pertenecer al tablero
         if estáEnTablero(x, y) and tablero[x][y] == otraBaldosa:		
             # Hay una pieza perteneciente al otro jugador al lado de nustra pieza		
             x += direcciónx		
             y += direccióny		
             if not estáEnTablero(x, y):		
-                continue		
+                continue
+            
+            #2) Convertir piezas del otro jugador
             while tablero[x][y] == otraBaldosa:		
                 x += direcciónx		
                 y += direccióny		
@@ -86,22 +117,23 @@ def esJugadaVálida(tablero, baldosa, comienzox, comienzoy):
     if len(baldosasAConvertir) == 0: # Si no se convirtió ninguna baldosa, la jugada no es válida.		
         return False		
     return baldosasAConvertir		
-		
-		
+
+
 def estáEnTablero(x, y):		
     # Devuelve True si las coordenadas se encuentran dentro del tablero		
     return x >= 0 and x <= 7 and y >= 0 and y <=7		
-		
-		
-def obtenerTableroConJugadasVálidas(tablero, baldosa):		
-    # Devuelve un nuevo tablero, marcando con "." las jugadas válidas que el jugador puede realizar.		
-    réplicaTablero = obtenerCopiaTablero(tablero)		
-		
-    for x, y in obtenerJugadasVálidas(réplicaTablero, baldosa):		
-        réplicaTablero[x][y] = '.'		
-    return réplicaTablero		
-		
-		
+
+####################################################################################################################################################
+#OBTENIENDO UNA LISTA CON TODAS LAS JUGADAS VALIDAS
+#
+#Aqui se comienza la creacion del Arbol de Juebo con las posibles jugadas que se pueden realizar en el siguiente estado
+#
+#La funcion obtenerJugadasValidas(), devuelves una lista de listas de dos elementos. Estas listas contienen las coordenadas XY de todas las jugadas
+#validas para el jugador correspondiente (sea jugador o computadora).
+#Esta funcion usa bucles anidados para comprobar cada par de coordenadas XY (las 64 combinaciones posibles) llamando a esJugadaValida() en cada iteracion.
+#Con esto se representa el Arbol de Juego, visualizando las jugadas con la funcion obtenerTableroConJugadasValidas()
+########################################################################################################################################################
+    
 def obtenerJugadasVálidas(tablero, baldosa):	
     # Devuelve una lista de listas [x,y] de jugadas válidas para el jugador en el tablero dado.		
     jugadasVálidas = []		
@@ -112,7 +144,25 @@ def obtenerJugadasVálidas(tablero, baldosa):
                 jugadasVálidas.append([x, y])		
     return jugadasVálidas		
 		
+#Representacion del Arbol de Juegadas, mas adelante especificamos la mejor jugada para la maquina.
+def obtenerTableroConJugadasVálidas(tablero, baldosa):		
+    # Devuelve un nuevo tablero, marcando con "." las jugadas válidas que el jugador puede realizar.		
+    réplicaTablero = obtenerCopiaTablero(tablero)		
 		
+    for x, y in obtenerJugadasVálidas(réplicaTablero, baldosa):		
+        réplicaTablero[x][y] = '.'		
+    return réplicaTablero		
+		
+
+#########################################################################################
+#FUNCIONES DE INTERACCION 
+#Obteniendo el Puntaje del Tablero de Juego
+#Obteniendo la Opcion de Baldosa del Jugador
+#Determinado Quién Comienza
+#Preguntar al Jugador si Quiere Jugar de Nuevo
+#Mostrar Puntajes actuales del juego
+########################################################################################
+    
 def obtenerPuntajeTablero(tablero):		
     # Determina el puntaje contando las piezas. Devuelve un diccionario con claves 'X' y 'O'.		
     puntajex = 0		
@@ -126,7 +176,7 @@ def obtenerPuntajeTablero(tablero):
     return {'X':puntajex, 'O':puntajeo}		
 		
 		
-def ingresarBaldosaJugador():		
+def ingresarBaldosaJugador():
     # Permite al jugador elegir que baldosa desea ser.		
     # Devuelve una lista con la baldosa del jugador como primer elemento y el de la computadora como segundo.		
     baldosa = ''		
@@ -148,13 +198,22 @@ def quiénComienza():
     else:		
         return 'jugador'		
 		
-		
 def jugarDeNuevo():		
     # Esta función devuelve True si el jugador quiere jugar de nuevo, de lo contrario devuelve False.		
     print('¿Quieres jugar de nuevo? (sí o no)')		
     return input().lower().startswith('s')		
+
+
+def mostrarPuntajes(baldosaJugador, baldosaComputadora):		
+    # Imprime el puntaje actual.		
+    puntajes = obtenerPuntajeTablero(tableroPrincipal)		
+    print('Tienes %s puntos. La computadora tiene %s puntos.' % (puntajes[baldosaJugador], puntajes[baldosaComputadora]))		
 		
-		
+#########################################################################################################################################
+#DESAROOLLO DEL JUEGO
+#
+#########################################################################################################################################
+    
 def hacerJugada(tablero, baldosa, comienzox, comienzoy):		
     # Coloca la baldosa sobre el tablero en comienzox, comienzoy, y convierte cualquier baldosa del oponente.		
     # Devuelve False si la jugada es inválida, True si es válida.		
@@ -237,12 +296,11 @@ def obtenerJugadaComputadora(tablero, baldosaComputadora):
     return mejorJugada
 		
 		
-def mostrarPuntajes(baldosaJugador, baldosaComputadora):		
-    # Imprime el puntaje actual.		
-    puntajes = obtenerPuntajeTablero(tableroPrincipal)		
-    print('Tienes %s puntos. La computadora tiene %s puntos.' % (puntajes[baldosaJugador], puntajes[baldosaComputadora]))		
-		
-		
+
+
+#####################
+#Ejecucion del juego#
+#####################
 		
 print('¡Bienvenido a Reversi!')		
 		
@@ -250,15 +308,15 @@ while True:
     # Reiniciar el tablero y el juego.		
     tableroPrincipal = obtenerNuevoTablero()
     reiniciarTablero(tableroPrincipal)		
-    baldosaJugador, baldosaComputadora = ingresarBaldosaJugador()		
+    baldosaJugador, baldosaComputadora = ingresarBaldosaJugador()
     mostrarPistas = False		
     turno = quiénComienza()		
     print(("El " if turno == "jugador" else "La ") + turno + ' comienza.')
 		
     while True:		
-        if turno == 'jugador':		
+        if turno == 'jugador':
             # Turno del jugador		
-            if mostrarPistas:		
+            if mostrarPistas:
                 tableroConJugadasVálidas = obtenerTableroConJugadasVálidas(tableroPrincipal, baldosaJugador)		
                 dibujarTablero(tableroConJugadasVálidas)		
             else:		
