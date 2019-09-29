@@ -54,7 +54,7 @@ def obtenerNuevoTablero():
     return tablero		
 
 #############################################################################################################################################################
-#Coprobando si una Jugada es Válida
+#Comprobando si una Jugada es Válida
 #Dada una estructura de datos tablero, la baldosa del jugador y la coordenadas XY de la jgada del jugador, esJugadaVálida() devuelve True si las reglas de
 #Othello permiten una jugada en esas coordenadas y False en caso contrario.
 #
@@ -282,31 +282,45 @@ def obtenerJugadaJugador(tablero, baldosaJugador):
 def obtenerJugadaComputadora(tablero, baldosaComputadora):
     # Dado un tablero y la baldosa de la computadora, determinar dónde		
     # jugar y devolver esa jugada como una lista [x, y].		
-    jugadasPosibles = obtenerJugadasVálidas(tablero, baldosaComputadora)
+    if dificultad == 'Novato':
+        #Solo toma la primera jugada que le aparesca en jugadasPosibles
+        jugadasPosibles = obtenerJugadasVálidas(tablero, baldosaComputadora)
+		# ordena al azar el orden de las jugadas posibles		
+        random.shuffle(jugadasPosibles)
+        
+        for x, y in jugadasPosibles:
+           if esEsquina(x, y):
+               return [x, y]
+           
+        return jugadasPosibles[0]
+        
+    elif dificultad == 'Intermedio':
+        #Juega la jugada que conviera mayor numero de piezas
+       jugadasPosibles = obtenerJugadasVálidas(tablero, baldosaComputadora)
+       # ordena al azar el orden de las jugadas posibles		
+       random.shuffle(jugadasPosibles)
+       # siempre jugar en una esquina si está disponible.		
+       for x, y in jugadasPosibles:
+           if esEsquina(x, y):
+               return [x, y]
 		
-    # ordena al azar el orden de las jugadas posibles		
-    random.shuffle(jugadasPosibles)
-		
-    # siempre jugar en una esquina si está disponible.		
-    for x, y in jugadasPosibles:
-        if esEsquina(x, y):
-            return [x, y]
-		
-    # Recorrer la lista de jugadas posibles y recordar la que da el mejor puntaje
-    ###################################################################
-    #Algoritmo IA para jugar contra la maquina
-    #Analizando las jugadas y se queda con la que mejor puntaje
-    ###################################################################
-    mejorPuntaje = -1
-    for x, y in jugadasPosibles:
-        réplicaTablero = obtenerCopiaTablero(tablero)
-        hacerJugada(réplicaTablero, baldosaComputadora, x, y)
-        puntaje = obtenerPuntajeTablero(réplicaTablero)[baldosaComputadora]
-        if puntaje > mejorPuntaje:
+        # Recorrer la lista de jugadas posibles y recordar la que da el mejor puntaje
+        ###################################################################
+        #Algoritmo IA para jugar contra la maquina
+        #Analizando las jugadas y se queda con la que mejor puntaje
+        ###################################################################
+       mejorPuntaje = -1
+       for x, y in jugadasPosibles:
+           réplicaTablero = obtenerCopiaTablero(tablero)
+           hacerJugada(réplicaTablero, baldosaComputadora, x, y)
+           puntaje = obtenerPuntajeTablero(réplicaTablero)[baldosaComputadora]
+           if puntaje > mejorPuntaje:
             mejorJugada = [x, y]
             mejorPuntaje = puntaje
-    return mejorJugada
+       return mejorJugada
 		
+    else:
+        return "dificultad no valida"
 
 #####################
 #Ejecucion del juego#
@@ -322,7 +336,14 @@ while True:
     mostrarPistas = False		
     turno = quiénComienza()		
     print(("El " if turno == "jugador" else "La ") + turno + ' comienza.')
-		
+    dificultad = input("Ingresa la dificultad, 1 = Novato, 2 = Intermedio, 3 = Experto) : ")
+    if dificultad == str(1):
+        dificultad = 'Novato'
+    elif dificultad == str(2):
+        dificultad = 'Intermedio'
+    else:
+        dificultad = 'Experto'
+
     while True:		
         if turno == 'jugador':
             # Turno del jugador		
@@ -363,14 +384,13 @@ while True:
     # Mostrar el puntaje final.		
     dibujarTablero(tableroPrincipal)		
     puntajes = obtenerPuntajeTablero(tableroPrincipal)		
-    print('X ha obtenido %s puntos. O ha obtenido %s puntos.' % (puntajes['X'], puntajes['O']))		
+    print('X ha obtenido %s puntos. O ha obtenido %s puntos.' % (puntajes['X'], puntajes['O']))
     if puntajes[baldosaJugador] > puntajes[baldosaComputadora]:		
-        print('¡Has vencido a la computadora por %s puntos! ¡Felicitaciones!' % (puntajes[baldosaJugador] - puntajes[baldosaComputadora]))		
+        print('¡Has vencido a la computadora dificultad %s , por %s puntos! ¡Felicitaciones!' % (dificultad,puntajes[baldosaJugador] - puntajes[baldosaComputadora]))
     elif puntajes[baldosaJugador] < puntajes[baldosaComputadora]:		
-        print('Has perdido. La computadora te ha vencido por %s puntos.' % (puntajes[baldosaComputadora] - puntajes[baldosaJugador]))		
+        print('Has perdido. La computadora te ha vencido dificultad %s , por %s puntos.' % (dificultad, puntajes[baldosaComputadora] - puntajes[baldosaJugador]))		
     else:		
         print('¡Ha sido un empate!')		
 		
     if not jugarDeNuevo():		
         break		
-    
