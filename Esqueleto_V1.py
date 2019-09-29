@@ -126,7 +126,7 @@ def estáEnTablero(x, y):
 ####################################################################################################################################################
 #OBTENIENDO UNA LISTA CON TODAS LAS JUGADAS VALIDAS
 #
-#Aqui se comienza la creacion del Arbol de Juebo con las posibles jugadas que se pueden realizar en el siguiente estado
+#Aqui se comienza la creacion del Arbol de Juego con las posibles jugadas que se pueden realizar en el siguiente estado
 #
 #La funcion obtenerJugadasValidas(), devuelves una lista de listas de dos elementos. Estas listas contienen las coordenadas XY de todas las jugadas
 #validas para el jugador correspondiente (sea jugador o computadora).
@@ -134,7 +134,7 @@ def estáEnTablero(x, y):
 #Con esto se representa el Arbol de Juego, visualizando las jugadas con la funcion obtenerTableroConJugadasValidas()
 ########################################################################################################################################################
     
-def obtenerJugadasVálidas(tablero, baldosa):	
+def obtenerJugadasVálidas(tablero, baldosa):
     # Devuelve una lista de listas [x,y] de jugadas válidas para el jugador en el tablero dado.		
     jugadasVálidas = []		
 		
@@ -210,8 +210,11 @@ def mostrarPuntajes(baldosaJugador, baldosaComputadora):
     print('Tienes %s puntos. La computadora tiene %s puntos.' % (puntajes[baldosaJugador], puntajes[baldosaComputadora]))		
 		
 #########################################################################################################################################
-#DESAROOLLO DEL JUEGO
-#
+#Funciones para el DESAROOLLO DEL JUEGO
+#hacerJugada (colocar una baldosa en el tablero y convertir otras fichas de acuerdo con las reglas del reversi)
+#obtenerCopiaTablero (hace una copia para hacer pruebas sin afectar el tablero final)
+#esEsquina  
+#obtenerJugadaJugador (Almacenar la jugada del jugador)
 #########################################################################################################################################
     
 def hacerJugada(tablero, baldosa, comienzox, comienzoy):		
@@ -269,8 +272,13 @@ def obtenerJugadaJugador(tablero, baldosaJugador):
 		
     return [x, y]		
 		
-#Funcion para determinar la jugada que debe ejecutar la computadora
-
+########################################################################################################
+#Heuristica con busqueda informada
+#La maquina analiza los posibles estados siguientes y en base a ese conocimiento toma la mejor opcion
+#1) Ejecuta las posibles jugadas
+#2) Cuenta las fichas convertidas en cada jugada
+#3) Se queda con la que genere un mayor numero de fichas a su favor
+#########################################################################################################
 def obtenerJugadaComputadora(tablero, baldosaComputadora):
     # Dado un tablero y la baldosa de la computadora, determinar dónde		
     # jugar y devolver esa jugada como una lista [x, y].		
@@ -284,8 +292,12 @@ def obtenerJugadaComputadora(tablero, baldosaComputadora):
         if esEsquina(x, y):
             return [x, y]
 		
-    # Recorrer la lista de jugadas posibles y recordar la que da el mejor puntaje		
-    mejorPuntaje = -1		
+    # Recorrer la lista de jugadas posibles y recordar la que da el mejor puntaje
+    ###################################################################
+    #Algoritmo IA para jugar contra la maquina
+    #Analizando las jugadas y se queda con la que mejor puntaje
+    ###################################################################
+    mejorPuntaje = -1
     for x, y in jugadasPosibles:
         réplicaTablero = obtenerCopiaTablero(tablero)
         hacerJugada(réplicaTablero, baldosaComputadora, x, y)
@@ -295,8 +307,6 @@ def obtenerJugadaComputadora(tablero, baldosaComputadora):
             mejorPuntaje = puntaje
     return mejorJugada
 		
-		
-
 
 #####################
 #Ejecucion del juego#
