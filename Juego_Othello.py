@@ -1,4 +1,12 @@
-# Reversi		
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: Carlos Roberto Flores Luna
+
+Description : Juego Othello desde terminal contra una IA
+
+"""
+
 
 #En las primeras lineas del codigo defino las funciones que posterirmente ocupo para jugar.
 
