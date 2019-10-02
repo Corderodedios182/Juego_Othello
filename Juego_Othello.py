@@ -252,7 +252,7 @@ def obtenerJugadaJugador(tablero, baldosaJugador):
     # Devuelve la jugada como [x, y] (o devuelve las cadenas 'pistas' o 'salir')		
     CIFRAS1A8 = '1 2 3 4 5 6 7 8'.split()		
     while True:		
-        print('Ingresa tu jugada, salir para terminar el juego, o pistas para activar/desactivar las pistas.')		
+        print('Ingresa tu jugada en este orden xy ejemplo 46, si deseas terminar el juego solo ingresa la palabra salir, o la paralabra pistas para activar/desactivar las pistas.')		
         jugada = input().lower()		
         if jugada == 'salir':		
             return 'salir'		
